@@ -1,4 +1,18 @@
 # PanopticFCN
+## Training and evaluating on Cityscapes
+In this repo, we apply Panoptic FCN to Cityscapes.
+
+Doing:
+- [ ] Adding data pipeline for Cityscapes
+- [ ] Adapting config to Cityscapes settings
+- [ ] Reproducing results from paper (training + evaluation)
+
+To be done:
+- [ ] Saving qualitative results
+- [ ] Adding image summaries in Tensorboard
+
+
+## Original 
 **Fully Convolutional Networks for Panoptic Segmentation**
 
 Yanwei Li, Hengshuang Zhao, Xiaojuan Qi, Liwei Wang, Zeming Li, Jian Sun, Jiaya Jia
