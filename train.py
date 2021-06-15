@@ -5,6 +5,7 @@ PanopticFCN Training Script.
 This script is a simplified version of the training script in detectron2/tools.
 """
 
+import torch
 import os
 import detectron2.utils.comm as comm
 from detectron2.checkpoint import DetectionCheckpointer
@@ -12,9 +13,12 @@ from detectron2.config import get_cfg
 from detectron2.engine import DefaultTrainer, default_argument_parser, default_setup, launch
 from detectron2.evaluation import COCOEvaluator, verify_results
 
+from data.cityscapes.cityscapes_panoptic_separated import register_all_cityscapes_panoptic
+from data.cityscapes.dataset_mapper import CityscapesPanopticDatasetMapper
+
 from panopticfcn import add_panopticfcn_config, build_lr_scheduler
 os.environ["NCCL_LL_THRESHOLD"] = "0"
-from detectron2.data import MetadataCatalog
+from detectron2.data import MetadataCatalog, build_detection_train_loader
 from detectron2.evaluation import (
     CityscapesInstanceEvaluator,
     CityscapesSemSegEvaluator,
@@ -46,7 +50,7 @@ class Trainer(DefaultTrainer):
             )
         if evaluator_type in ["coco", "coco_panoptic_seg"]:
             evaluator_list.append(COCOEvaluator(dataset_name, cfg, True, output_folder))
-        if evaluator_type == "coco_panoptic_seg":
+        if evaluator_type in ["cityscapes_panoptic_seg", "coco_panoptic_seg"]:
             evaluator_list.append(COCOPanopticEvaluator(dataset_name, output_folder))
         if evaluator_type == "cityscapes_instance":
             assert (
@@ -80,6 +84,14 @@ class Trainer(DefaultTrainer):
         """
         return build_lr_scheduler(cfg, optimizer)
 
+    @classmethod
+    def build_train_loader(cls, cfg):
+        if cfg.DATASETS.NAME == 'Cityscapes':
+            mapper = CityscapesPanopticDatasetMapper(cfg)
+            return build_detection_train_loader(cfg, mapper=mapper)
+        else:
+            return build_detection_train_loader(cfg)
+
 def setup(args):
     """
     Create configs and perform basic setups.
@@ -94,6 +106,10 @@ def setup(args):
 
 def main(args):
     cfg = setup(args)
+
+    if cfg.DATASETS.NAME == 'Cityscapes':
+        register_all_cityscapes_panoptic()
+
     if args.eval_only:
         model = Trainer.build_model(cfg)
         DetectionCheckpointer(model, save_dir=cfg.OUTPUT_DIR).resume_or_load(

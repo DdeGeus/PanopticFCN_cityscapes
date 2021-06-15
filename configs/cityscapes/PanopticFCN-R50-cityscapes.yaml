@@ -1,0 +1,59 @@
+MODEL:
+  META_ARCHITECTURE: "PanopticFCN"
+  # WEIGHTS: "detectron2://ImageNetPretrained/MSRA/R-50.pkl"
+  WEIGHTS: "data/pretrained/R-50.pkl"
+  MASK_ON: True
+  PIXEL_MEAN: [123.675, 116.28, 103.53]
+  PIXEL_STD: [1.0, 1.0, 1.0]
+  RESNETS:
+    DEPTH: 50
+    OUT_FEATURES: ["res2", "res3", "res4", "res5"]
+  FPN:
+    IN_FEATURES: ["res2", "res3", "res4", "res5"]
+  LOSS_WEIGHT:
+    SEGMENT: 4.0
+  POSITION_HEAD:
+    THING:
+      NUM_CLASSES: 8
+    STUFF:
+      NUM_CLASSES: 12
+      WITH_THING: True
+  SEM_SEG_HEAD:
+    NUM_CLASSES: 12
+  KERNEL_HEAD:
+    INSTANCE_SCALES: ((1, 128), (64, 256), (128, 512), (256, 1024), (512, 2048),)
+  TENSOR_DIM: 150  # Adapted because max inst. per img > 100
+DATASETS:
+  NAME: "Cityscapes"
+  TRAIN: ("cityscapes_fine_panoptic_train_separated",)
+  TEST: ("cityscapes_fine_panoptic_val_separated",)
+DATALOADER:
+  FILTER_EMPTY_ANNOTATIONS: True
+  NUM_WORKERS: 12
+SOLVER:
+  BASE_LR: 0.02
+  WEIGHT_DECAY: 1e-4
+  LR_SCHEDULER_NAME: "WarmupPolyLR"
+  POLY_LR_POWER: 0.9
+  WARMUP_ITERS: 1500
+  WARMUP_FACTOR: 0.001
+  WARMUP_METHOD: "linear"
+  CLIP_GRADIENTS:
+    ENABLED: True
+    CLIP_VALUE: 35.0
+  IMS_PER_BATCH: 32
+  MAX_ITER: 65000
+  CHECKPOINT_PERIOD: 20000
+INPUT:
+  MIN_SIZE_TRAIN: (512, 2048)
+  MIN_SIZE_TRAIN_SAMPLING: "range"
+  MIN_SIZE_TEST: 1024
+  MAX_SIZE_TRAIN: 4096
+  MAX_SIZE_TEST: 2048
+  CROP:
+    ENABLED: True
+    TYPE: "absolute"
+    SIZE: (512, 1024)
+  MASK_FORMAT: "bitmask"
+VERSION: 2
+

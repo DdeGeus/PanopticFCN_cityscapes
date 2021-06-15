@@ -3,13 +3,44 @@
 In this repo, we apply Panoptic FCN to Cityscapes.
 
 Doing:
-- [ ] Adding data pipeline for Cityscapes
-- [ ] Adapting config to Cityscapes settings
+- [x] Adding data pipeline for Cityscapes (adapted from original [Detectron2 code](https://github.com/facebookresearch/detectron2/tree/master/detectron2/data))
+- [x] Adapting config to Cityscapes settings (config here)
 - [ ] Reproducing results from paper (training + evaluation)
 
 To be done:
 - [ ] Saving qualitative results
 - [ ] Adding image summaries in Tensorboard
+
+Current status:
+
+<table><tbody>
+<!-- START TABLE -->
+<!-- TABLE HEADER -->
+<th valign="bottom">Method</th>
+<th valign="bottom">Backbone</th>
+<th valign="bottom">LR</th>
+<th valign="bottom">Batch size</th>
+<th valign="bottom">Iters</th>
+<th valign="bottom">PQ</th>
+<th valign="bottom">PQ_st</th>
+<th valign="bottom">PQ_th</th>
+<th valign="bottom">config</th>
+<th valign="bottom">download</th>
+<!-- TABLE BODY -->
+<tr>
+<td align="left">PanopticFCN</td>
+<td align="center">R50</td>
+<td align="center">0.02</td>
+<td align="center">32</td>
+<td align="center">65k</td>
+<td align="center">58.0</td>
+<td align="center">64.9</td>
+<td align="center">48.6</td>
+<td align="center"><a href="configs/cityscapes/PanopticFCN-R50-cityscapes.yaml">config</a>
+<td align="center">TBD</td>
+</tr>
+</tbody></table>
+
 
 
 ## Original 
@@ -44,7 +75,7 @@ For example, to launch PanopticFCN training (1x schedule) with ResNet-50 backbon
 one should execute:
 ```bash
 cd /path/to/detectron2
-python3 projects/PanopticFCN/train.py --config-file projects/PanopticFCN/configs/PanopticFCN-R50-1x.yaml --num-gpus 8
+python3 projects/PanopticFCN_cityscapes/train.py --config-file projects/PanopticFCN_cityscapes/configs/cityscapes/PanopticFCN-R50-cityscapes.yaml --num-gpus 1
 ```
 
 ## Evaluation

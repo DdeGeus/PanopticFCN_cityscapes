@@ -2,6 +2,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
+from detectron2.data import MetadataCatalog
 from detectron2.structures import ImageList, Instances, BitMasks
 from detectron2.modeling.meta_arch.build import META_ARCH_REGISTRY
 
@@ -59,6 +60,9 @@ class PanopticFCN(nn.Module):
         pixel_mean = torch.Tensor(cfg.MODEL.PIXEL_MEAN).to(self.device).view(3, 1, 1)
         pixel_std = torch.Tensor(cfg.MODEL.PIXEL_STD).to(self.device).view(3, 1, 1)
         self.normalizer = lambda x: (x - pixel_mean) / pixel_std
+
+        dataset_names = self.cfg.DATASETS.TRAIN
+        self.meta = MetadataCatalog.get(dataset_names[0])
 
         self.to(self.device)
 
@@ -524,30 +528,35 @@ class PanopticFCN(nn.Module):
                         _mask = _mask & (panoptic_seg == 0)
                     current_segment_id += 1
                     panoptic_seg[_mask] = current_segment_id
+                    thing_category_id = _cate.item()
+                    category_id = self.meta.thing_train_id2contiguous_id[thing_category_id]
                     segments_info.append(
                         {
                             "id": current_segment_id,
                             "isthing": True,
                             "score": _score.item(),
-                            "category_id": _cate.item(),
+                            "category_id": category_id,
                             "instance_id": _idx,
                         })
 
         stuff_labels = torch.unique(stuff_results)
         for stuff_label in stuff_labels:
-            if stuff_label == 0:  # 0 is a special "thing" class
-                continue
+            if self.cfg.MODEL.POSITION_HEAD.STUFF.WITH_THING:
+                if stuff_label == 0:  # 0 is a special "thing" class
+                    continue
             mask = (stuff_results == stuff_label) & (panoptic_seg == 0)
             mask_area = mask.sum()
             if mask_area < stuff_area_limit:
                 continue
             current_segment_id += 1
             panoptic_seg[mask] = current_segment_id
+            stuff_category_id = stuff_label.item()
+            category_id = self.meta.stuff_train_id2contiguous_id[stuff_category_id]
             segments_info.append(
                 {
                     "id": current_segment_id,
                     "isthing": False,
-                    "category_id": stuff_label.item(),
+                    "category_id": category_id,
                     "area": mask_area.item(),
                 })
         return panoptic_seg, segments_info
