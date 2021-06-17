@@ -22,8 +22,8 @@ Current status:
 <th valign="bottom">Batch size</th>
 <th valign="bottom">Iters</th>
 <th valign="bottom">PQ</th>
-<th valign="bottom">PQ_st</th>
 <th valign="bottom">PQ_th</th>
+<th valign="bottom">PQ_st</th>
 <th valign="bottom">config</th>
 <th valign="bottom">download</th>
 <!-- TABLE BODY -->
@@ -33,9 +33,9 @@ Current status:
 <td align="center">0.02</td>
 <td align="center">32</td>
 <td align="center">65k</td>
-<td align="center">58.0</td>
-<td align="center">64.9</td>
-<td align="center">48.6</td>
+<td align="center">58.1</td>
+<td align="center">49.3</td>
+<td align="center">64.6</td>
 <td align="center"><a href="configs/cityscapes/PanopticFCN-R50-cityscapes.yaml">config</a>
 <td align="center">TBD</td>
 </tr>
