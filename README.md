@@ -4,7 +4,7 @@ In this repo, we apply Panoptic FCN to Cityscapes.
 
 Doing:
 - [x] Adding data pipeline for Cityscapes (adapted from original [Detectron2 code](https://github.com/facebookresearch/detectron2/tree/master/detectron2/data))
-- [x] Adapting config to Cityscapes settings (config here)
+- [x] Adapting config to Cityscapes settings (config [here](configs/cityscapes/PanopticFCN-R50-cityscapes.yaml))
 - [ ] Reproducing results from paper (training + evaluation)
 
 To be done:
