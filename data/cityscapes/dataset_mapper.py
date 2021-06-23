@@ -147,13 +147,15 @@ class CityscapesPanopticDatasetMapper:
       # sem_seg_gt = None
 
     # For Cityscapes, the contiguous ids for stuff are equal to the stuff train ids. Change for other datasets.
-    if self.cfg.MODEL.POSITION_HEAD.STUFF.WITH_THING:
-      sem_seg_gt = np.where(np.isin(sem_seg_gt_tmp, stuff_classes), sem_seg_gt_tmp + 1, self.meta.ignore_label)
-      # Set things class pixels to 0
-      sem_seg_gt = np.where(np.isin(sem_seg_gt_tmp, np.array(things_classes)), 0, sem_seg_gt)
-
+    if self.cfg.MODEL.POSITION_HEAD.STUFF.ALL_CLASSES:
+      sem_seg_gt = np.where(np.isin(sem_seg_gt_tmp, stuff_classes), sem_seg_gt_tmp, self.meta.ignore_label)
     else:
-      sem_seg_gt = np.where(np.isin(sem_seg_gt_tmp, stuff_classes), sem_seg_gt_tmp + 1, self.meta.ignore_label)
+      if self.cfg.MODEL.POSITION_HEAD.STUFF.WITH_THING:
+        sem_seg_gt = np.where(np.isin(sem_seg_gt_tmp, stuff_classes), sem_seg_gt_tmp + 1, self.meta.ignore_label)
+        # Set things class pixels to 0
+        sem_seg_gt = np.where(np.isin(sem_seg_gt_tmp, np.array(things_classes)), 0, sem_seg_gt)
+      else:
+        sem_seg_gt = np.where(np.isin(sem_seg_gt_tmp, stuff_classes), sem_seg_gt_tmp + 1, self.meta.ignore_label)
 
     aug_input = T.AugInput(image, sem_seg=sem_seg_gt)
     transforms = self.augmentations(aug_input)

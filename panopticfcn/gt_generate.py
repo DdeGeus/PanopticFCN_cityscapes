@@ -17,6 +17,7 @@ class GenerateGT(object):
         self.thing_classes = cfg.MODEL.POSITION_HEAD.THING.NUM_CLASSES
         self.stuff_classes = cfg.MODEL.POSITION_HEAD.STUFF.NUM_CLASSES
         self.sem_with_thing = cfg.MODEL.POSITION_HEAD.STUFF.WITH_THING
+        self.sem_all_classes = cfg.MODEL.POSITION_HEAD.STUFF.ALL_CLASSES
         self.min_overlap = cfg.MODEL.POSITION_HEAD.THING.MIN_OVERLAP
         self.instance_scales = cfg.MODEL.KERNEL_HEAD.INSTANCE_SCALES
         self.gaussian_sigma = cfg.MODEL.POSITION_HEAD.THING.GAUSSIAN_SIGMA
@@ -33,7 +34,7 @@ class GenerateGT(object):
 
         # gt for stuff
         gt_sem = gt_semantics.to(dtype=torch.int64, device=self.device)
-        if self.sem_with_thing:
+        if self.sem_with_thing or self.sem_all_classes:
             gt_sem[gt_sem==self.ignore_val] = self.stuff_classes
         else:
             gt_sem[gt_sem==self.ignore_val] = 0

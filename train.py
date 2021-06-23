@@ -108,7 +108,7 @@ def main(args):
     cfg = setup(args)
 
     if cfg.DATASETS.NAME == 'Cityscapes':
-        register_all_cityscapes_panoptic()
+        register_all_cityscapes_panoptic(cfg)
 
     if args.eval_only:
         model = Trainer.build_model(cfg)

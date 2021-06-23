@@ -25,6 +25,7 @@ def add_panopticfcn_config(cfg):
     cfg.MODEL.POSITION_HEAD.CONVS_DIM       = 256
     cfg.MODEL.POSITION_HEAD.NORM            = "GN"
     cfg.MODEL.POSITION_HEAD.DEFORM          = True
+
     cfg.MODEL.POSITION_HEAD.THING = CN()
     cfg.MODEL.POSITION_HEAD.THING.CENTER_TYPE    = "mass"
     cfg.MODEL.POSITION_HEAD.THING.POS_NUM        = 7
@@ -37,6 +38,7 @@ def add_panopticfcn_config(cfg):
     
     cfg.MODEL.POSITION_HEAD.STUFF = CN()
     cfg.MODEL.POSITION_HEAD.STUFF.NUM_CLASSES  = 54
+    cfg.MODEL.POSITION_HEAD.STUFF.ALL_CLASSES  = False  # this one should have priority over "WITH_THING"
     cfg.MODEL.POSITION_HEAD.STUFF.WITH_THING   = True
     cfg.MODEL.POSITION_HEAD.STUFF.THRES        = 0.05
 

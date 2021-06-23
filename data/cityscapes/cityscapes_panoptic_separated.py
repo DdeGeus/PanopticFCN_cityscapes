@@ -126,7 +126,7 @@ _RAW_CITYSCAPES_PANOPTIC_SPLITS = {
 }
 
 
-def register_all_cityscapes_panoptic():
+def register_all_cityscapes_panoptic(cfg):
     root = os.getenv("DETECTRON2_DATASETS", "datasets")
 
     meta = {}
@@ -171,11 +171,19 @@ def register_all_cityscapes_panoptic():
             thing_dataset_id_to_contiguous_id[k["id"]] = k["trainId"]
             contiguous_id_to_thing_train_id[k["trainId"]] = thing_id
             thing_id += 1
+            if cfg.MODEL.POSITION_HEAD.STUFF.ALL_CLASSES:
+                stuff_dataset_id_to_contiguous_id[k["id"]] = k["trainId"]
+                contiguous_id_to_stuff_train_id[k["trainId"]] = stuff_id
+                stuff_id += 1
         else:
-            # TODO(daan): only do this when there is a separate stuff class for all things
-            stuff_dataset_id_to_contiguous_id[k["id"]] = k["trainId"]
-            contiguous_id_to_stuff_train_id[k["trainId"]] = stuff_id + 1
-            stuff_id += 1
+            if cfg.MODEL.POSITION_HEAD.STUFF.WITH_THING and not cfg.MODEL.POSITION_HEAD.STUFF.ALL_CLASSES:
+                stuff_dataset_id_to_contiguous_id[k["id"]] = k["trainId"]
+                contiguous_id_to_stuff_train_id[k["trainId"]] = stuff_id + 1
+                stuff_id += 1
+            else:
+                stuff_dataset_id_to_contiguous_id[k["id"]] = k["trainId"]
+                contiguous_id_to_stuff_train_id[k["trainId"]] = stuff_id
+                stuff_id += 1
 
     meta["thing_dataset_id_to_contiguous_id"] = thing_dataset_id_to_contiguous_id
     meta["stuff_dataset_id_to_contiguous_id"] = stuff_dataset_id_to_contiguous_id

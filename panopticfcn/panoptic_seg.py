@@ -2,6 +2,10 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
+from PIL import Image
+import numpy as np
+import json
+
 from detectron2.data import MetadataCatalog
 from detectron2.structures import ImageList, Instances, BitMasks
 from detectron2.modeling.meta_arch.build import META_ARCH_REGISTRY
@@ -308,8 +312,9 @@ class PanopticFCN(nn.Module):
         idx_feat_st = pred_st_mask * pred_weights.unsqueeze(1)
         idx_feat_st = idx_feat_st.reshape(-1, *weight_shape[-3:])
         idx_feat_st = F.adaptive_avg_pool2d(idx_feat_st, output_size=1)
-        if not self.sem_with_thing:
-            class_st += 1
+        if not self.cfg.MODEL.POSITION_HEAD.STUFF.ALL_CLASSES:
+            if not self.sem_with_thing:
+                class_st += 1
 
         return idx_feat_th, class_th, score_th, thing_num, idx_feat_st, score_st, class_st, stuff_num
     
@@ -391,7 +396,7 @@ class PanopticFCN(nn.Module):
                             class_ths, score_ths, pred_thing, img_shape, ori_shape)                
             else:
                 pred_mask, class_ths, score_ths = None, None, None
-            if self.sem_with_thing:
+            if self.sem_with_thing or self.cfg.MODEL.POSITION_HEAD.STUFF.ALL_CLASSES:
                 sem_classes = self.sem_classes
             else:
                 sem_classes = self.sem_classes + 1
@@ -512,6 +517,7 @@ class PanopticFCN(nn.Module):
         current_segment_id = 0
         segments_info = []
         if thing_cate is not None:
+            print("thing_cate", thing_cate)
             keep = thing_score >= inst_threshold
             if keep.sum() > 0:
                 pred_thing = pred_thing[keep]
@@ -530,6 +536,7 @@ class PanopticFCN(nn.Module):
                     panoptic_seg[_mask] = current_segment_id
                     thing_category_id = _cate.item()
                     category_id = self.meta.thing_train_id2contiguous_id[thing_category_id]
+                    print("category_id_th", category_id)
                     segments_info.append(
                         {
                             "id": current_segment_id,
@@ -541,8 +548,13 @@ class PanopticFCN(nn.Module):
 
         stuff_labels = torch.unique(stuff_results)
         for stuff_label in stuff_labels:
+            stuff_category_id = stuff_label.item()
+            category_id = self.meta.stuff_train_id2contiguous_id[stuff_category_id]
             if self.cfg.MODEL.POSITION_HEAD.STUFF.WITH_THING:
                 if stuff_label == 0:  # 0 is a special "thing" class
+                    continue
+            if self.cfg.MODEL.POSITION_HEAD.STUFF.ALL_CLASSES:
+                if category_id in self.meta.thing_train_id2contiguous_id.values():
                     continue
             mask = (stuff_results == stuff_label) & (panoptic_seg == 0)
             mask_area = mask.sum()
@@ -550,8 +562,6 @@ class PanopticFCN(nn.Module):
                 continue
             current_segment_id += 1
             panoptic_seg[mask] = current_segment_id
-            stuff_category_id = stuff_label.item()
-            category_id = self.meta.stuff_train_id2contiguous_id[stuff_category_id]
             segments_info.append(
                 {
                     "id": current_segment_id,
