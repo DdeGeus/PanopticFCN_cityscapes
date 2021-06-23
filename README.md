@@ -33,9 +33,9 @@ Current status:
 <td align="center">0.02</td>
 <td align="center">32</td>
 <td align="center">65k</td>
-<td align="center">58.1</td>
-<td align="center">49.3</td>
-<td align="center">64.6</td>
+<td align="center">58.8</td>
+<td align="center">51.5</td>
+<td align="center">64.1</td>
 <td align="center"><a href="configs/cityscapes/PanopticFCN-R50-cityscapes.yaml">config</a>
 <td align="center">TBD</td>
 </tr>
