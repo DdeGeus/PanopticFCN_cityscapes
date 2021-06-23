@@ -1,7 +1,7 @@
 MODEL:
   META_ARCHITECTURE: "PanopticFCN"
   # WEIGHTS: "detectron2://ImageNetPretrained/MSRA/R-50.pkl"
-  WEIGHTS: "/home/ddegeus/nvme/projects/clones/detectron2/projects/PanopticFCN_cityscapes/data/pretrained/R-50.pkl"
+  WEIGHTS: "data/pretrained/R-50.pkl"
   MASK_ON: True
   PIXEL_MEAN: [123.675, 116.28, 103.53]
   PIXEL_STD: [1.0, 1.0, 1.0]
