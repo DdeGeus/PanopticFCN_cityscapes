@@ -1,6 +1,7 @@
 MODEL:
   META_ARCHITECTURE: "PanopticFCN"
-  WEIGHTS: "detectron2://ImageNetPretrained/MSRA/R-50.pkl"
+  # WEIGHTS: "detectron2://ImageNetPretrained/MSRA/R-50.pkl"
+  WEIGHTS: "data/pretrained/R-50.pkl"
   MASK_ON: True
   PIXEL_MEAN: [123.675, 116.28, 103.53]
   PIXEL_STD: [1.0, 1.0, 1.0]
@@ -43,12 +44,12 @@ SOLVER:
   WEIGHT_DECAY: 1e-4
   LR_SCHEDULER_NAME: "WarmupPolyLR"
   POLY_LR_POWER: 0.9
-  WARMUP_ITERS: 1000
+  WARMUP_ITERS: 2000
   WARMUP_FACTOR: 0.001
   WARMUP_METHOD: "linear"
   CLIP_GRADIENTS:
     ENABLED: True
-    CLIP_VALUE: 15.0
+    CLIP_VALUE: 35.0
   IMS_PER_BATCH: 32
   MAX_ITER: 65000
   CHECKPOINT_PERIOD: 20000
@@ -59,11 +60,9 @@ INPUT:
   MAX_SIZE_TRAIN: 4096
   MAX_SIZE_TEST: 2048
   CROP:
-    MINIMUM_INST_AREA: 0
     ENABLED: True
     TYPE: "absolute"
     SIZE: (512, 1024)
   MASK_FORMAT: "bitmask"
 VERSION: 2
 
-OUTPUT_DIR: "output/cs_65k_test"
