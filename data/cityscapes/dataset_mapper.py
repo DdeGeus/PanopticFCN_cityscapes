@@ -7,13 +7,14 @@ import numpy as np
 from typing import Callable, List, Union
 import torch
 import pycocotools
-from panopticapi.utils import rgb2id
 
 from detectron2.config import configurable
 from detectron2.data import MetadataCatalog
 from detectron2.data import detection_utils as utils
 from detectron2.data import transforms as T
 from detectron2.structures import BoxMode
+
+from data.cityscapes.augmentations import RandomCropWithInstance, AugInput
 
 __all__ = ["CityscapesPanopticDatasetMapper"]
 
@@ -82,7 +83,14 @@ class CityscapesPanopticDatasetMapper:
   def from_config(cls, cfg, is_train: bool = True):
     augs = utils.build_augmentation(cfg, is_train)
     if cfg.INPUT.CROP.ENABLED and is_train:
-      augs.insert(1, T.RandomCrop(cfg.INPUT.CROP.TYPE, cfg.INPUT.CROP.SIZE))
+      if cfg.INPUT.CROP.MINIMUM_INST_AREA == 0:
+        augs.insert(1, T.RandomCrop(cfg.INPUT.CROP.TYPE,
+                                    cfg.INPUT.CROP.SIZE))
+      else:
+        assert cfg.INPUT.CROP.MINIMUM_INST_AREA > 0
+        augs.insert(1, RandomCropWithInstance(cfg.INPUT.CROP.TYPE,
+                                              cfg.INPUT.CROP.SIZE,
+                                              cfg.INPUT.CROP.MINIMUM_INST_AREA))
       recompute_boxes = cfg.MODEL.MASK_ON
     else:
       recompute_boxes = False
@@ -123,6 +131,7 @@ class CityscapesPanopticDatasetMapper:
       raise NotImplementedError("Currently only possible if pan seg GT image file name is given")
       # pan_seg_gt = None
 
+    inst_map = np.zeros_like(pan_seg_gt, dtype=np.uint8)
     # Create annotations in desired instance segmentation format
     annotations = list()
     for segment in dataset_dict['segments_info']:
@@ -132,9 +141,14 @@ class CityscapesPanopticDatasetMapper:
         annotation['bbox_mode'] = BoxMode.XYWH_ABS
         annotation['category_id'] = self.meta.contiguous_id_to_thing_train_id[segment['category_id']]
         mask = (pan_seg_gt == segment['id']).astype(np.uint8)
+        if segment['iscrowd'] == 0:
+          inst_map = inst_map + mask
         annotation['segmentation'] = pycocotools.mask.encode(np.asarray(mask, order="F"))
         annotation['iscrowd'] = segment['iscrowd']
         annotations.append(annotation)
+
+    if np.any(inst_map > 1):
+      raise ValueError("There cannot be multiple instances at a single pixel")
 
     if len(annotations) > 0:
       dataset_dict['annotations'] = annotations
@@ -157,7 +171,7 @@ class CityscapesPanopticDatasetMapper:
       else:
         sem_seg_gt = np.where(np.isin(sem_seg_gt_tmp, stuff_classes), sem_seg_gt_tmp + 1, self.meta.ignore_label)
 
-    aug_input = T.AugInput(image, sem_seg=sem_seg_gt)
+    aug_input = AugInput(image, sem_seg=sem_seg_gt, inst_map=inst_map)
     transforms = self.augmentations(aug_input)
     image, sem_seg_gt = aug_input.image, aug_input.sem_seg
 

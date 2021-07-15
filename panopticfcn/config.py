@@ -84,5 +84,6 @@ def add_panopticfcn_config(cfg):
 
     cfg.DATASETS.NAME = "COCO"
 
+    cfg.INPUT.CROP.MINIMUM_INST_AREA = 0
 
 
